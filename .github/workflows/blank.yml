@@ -26,10 +26,18 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build APK
-        run: gradle assembleDebug
-
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk ScreenTranslate.apk
+        run: |
+          SETTINGS=$(find . -name settings.gradle.kts | head -n 1)
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: settings.gradle.kts not found. The project files were not uploaded."
+            ls -R
+            exit 1
+          fi
+          DIR=$(dirname "$SETTINGS")
+          echo "Project folder: $DIR"
+          cd "$DIR"
+          gradle assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/ScreenTranslate.apk"
 
       - name: Save APK (download from the Actions tab)
         uses: actions/upload-artifact@v4
